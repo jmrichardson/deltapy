@@ -80,7 +80,7 @@ def a_chi(df, drop=None, lags=1, sample_steps=2 ):
 
   chi2sampler = AdditiveChi2Sampler(sample_steps=sample_steps)
 
-  df_2 = chi2sampler.fit_transform(df_2, df["Close"])
+  df_2 = chi2sampler.fit_transform(df_2, df["close"])
 
   df_2 = pd.DataFrame(df_2, index=df.index)
   df_2 = df.add_prefix('achi_')
@@ -128,7 +128,7 @@ def encoder_dataset(df, drop=None, dimesions=20):
 
   return encoded_train
 
-# df_out = encoder_dataset(df, ["Close_1"], 15)
+
 
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -147,7 +147,7 @@ def lle_feat(df, drop=None, components=4):
     df = pd.concat((keep,df),axis=1)
   return df
 
-# df_out = lle_feat(df,["Close_1"],4)
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -169,7 +169,7 @@ def feature_agg(df, drop=None, components=4):
     return df
 
 
-# df_out = feature_agg(df.fillna(0),["Close_1"],4 )
+
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -194,4 +194,3 @@ def neigh_feat(df, drop, neighbors=6):
 
   return df
 
-# df_out = neigh_feat(df,["Close_1"],4 )
