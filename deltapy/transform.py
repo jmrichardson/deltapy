@@ -4,7 +4,6 @@ import statsmodels.api as sm
 from scipy import signal, integrate
 from pykalman import UnscentedKalmanFilter
 from tsaug import *
-from fbprophet import Prophet
 import pylab as pl
 from seasonal.periodogram import periodogram
 
