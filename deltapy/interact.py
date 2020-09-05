@@ -150,7 +150,7 @@ def haversine_distance(row, lon="Open", lat="Close"):
 
 
 def tech(df):
-      return ta.add_all_ta_features(df, open="Open", high="High", low="Low", close="Close", volume="Volume")
+      return ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume")
   
 # df = tech(df)
 
