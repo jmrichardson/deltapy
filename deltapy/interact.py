@@ -169,7 +169,7 @@ def genetic_feat(df, num_gen=20, num_comp=10):
                           max_samples=0.9, verbose=1,
                           random_state=0, n_jobs=6)
 
-  gen_feats = gp.fit_transform(df.drop("Close_1", axis=1), df["Close_1"]); df.iloc[:,:8]
+  gen_feats = gp.fit_transform(df.drop("close", axis=1), df["close"]); df.iloc[:,:8]
   gen_feats = pd.DataFrame(gen_feats, columns=["gen_"+str(a) for a in range(gen_feats.shape[1])])
   gen_feats.index = df.index
   return pd.concat((df,gen_feats),axis=1)
