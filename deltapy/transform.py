@@ -1,8 +1,5 @@
 import pandas as pd
 import numpy as np
-import statsmodels.api as sm
-from scipy import signal, integrate
-from pykalman import UnscentedKalmanFilter
 from tsaug import *
 import pylab as pl
 from seasonal.periodogram import periodogram
@@ -187,16 +184,14 @@ def triple_exponential_smoothing(df,cols, slen, alpha, beta, gamma, n_preds):
               seasonals[i%slen] = gamma*(val-smooth) + (1-gamma)*seasonals[i%slen]
               result.append(smooth+trend+seasonals[i%slen])
       df[col+"_TES"] = result
-    #print(seasonals)
-    return df
-
-# df_out= triple_exponential_smoothing(df.copy(),["Close"], 12, .2,.2,.2,0); df_out.head()
 
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 def naive_dec(df, columns, freq=2):
+  import statsmodels.api as sm
+
   for col in columns:
     decomposition = sm.tsa.seasonal_decompose(df[col], model='additive', freq = freq, two_sided=False)
     df[col+"_NDDT" ] = decomposition.trend
@@ -210,6 +205,8 @@ def naive_dec(df, columns, freq=2):
 
 
 def bkb(df, cols):
+  import statsmodels.api as sm
+
   for col in cols:
     df[col+"_BPF"] = sm.tsa.filters.bkfilter(df[[col]].values, 2, 10, len(df)-1)
   return df
@@ -220,12 +217,14 @@ def bkb(df, cols):
 
 
 def butter_lowpass(cutoff, fs=20, order=5):
+    from scipy import signal, integrate
     nyq = 0.5 * fs
     normal_cutoff = cutoff / nyq
     b, a = signal.butter(order, normal_cutoff, btype='low', analog=False)
     return b, a
     
 def butter_lowpass_filter(df,cols, cutoff, fs=20, order=5):
+    from scipy import signal, integrate
     b, a = butter_lowpass(cutoff, fs, order=order)
     for col in cols:
       df[col+"_BUTTER"] = signal.lfilter(b, a, df[col])
@@ -238,6 +237,7 @@ def butter_lowpass_filter(df,cols, cutoff, fs=20, order=5):
 
 
 def instantaneous_phases(df,cols):
+    from scipy import signal, integrate
     for col in cols:
       df[col+"_HILLB"] = np.unwrap(np.angle(signal.hilbert(df[col], axis=0)), axis=0)
     return df
@@ -248,6 +248,8 @@ def instantaneous_phases(df,cols):
 
 
 def kalman_feat(df, cols):
+  from pykalman import UnscentedKalmanFilter
+
   for col in cols:
     ukf = UnscentedKalmanFilter(lambda x, w: x + np.sin(w), lambda x, v: x + v, observation_covariance=0.1)
     (filtered_state_means, filtered_state_covariances) = ukf.filter(df[col])
@@ -262,6 +264,8 @@ def kalman_feat(df, cols):
 
 
 def perd_feat(df, cols):
+  from scipy import signal, integrate
+
   for col in cols:
     sig = signal.periodogram(df[col],fs=1, return_onesided=False)
     df[col+"_FREQ"] = sig[0]
@@ -288,6 +292,7 @@ def fft_feat(df, cols):
 
 
 def harmonicradar_cw(df, cols, fs,fc):
+    from scipy import signal, integrate
     for col in cols:
       ttxt = f'CW: {fc} Hz'
       #%% input
@@ -308,6 +313,7 @@ def harmonicradar_cw(df, cols, fs,fc):
 
 
 def saw(df, cols):
+    from scipy import signal, integrate
     for col in cols:
       df[col+" SAW"] = signal.sawtooth(df[col])
     return df
@@ -317,26 +323,26 @@ def saw(df, cols):
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-def modify(df, cols):
-  for col in cols:
-    series = df[col].values
-    df[col+"_magnify"], _ = magnify(series, series)
-    df[col+"_affine"], _ = affine(series, series)
-    df[col+"_crop"], _ = crop(series, series)
-    df[col+"_cross_sum"], _ = cross_sum(series, series)
-    df[col+"_resample"], _ = resample(series, series)
-    df[col+"_trend"], _ = trend(series, series)
-
-    df[col+"_random_affine"], _ = random_time_warp(series, series)
-    df[col+"_random_crop"], _ = random_crop(series, series)
-    df[col+"_random_cross_sum"], _ = random_cross_sum(series, series)
-    df[col+"_random_sidetrack"], _ = random_sidetrack(series, series)
-    df[col+"_random_time_warp"], _ = random_time_warp(series, series)
-    df[col+"_random_magnify"], _ = random_magnify(series, series)
-    df[col+"_random_jitter"], _ = random_jitter(series, series)
-    df[col+"_random_trend"], _ = random_trend(series, series)
-  return df
-
+# def modify(df, cols):
+  # for col in cols:
+    # series = df[col].values
+    # df[col+"_magnify"], _ = magnify(series, series)
+    # df[col+"_affine"], _ = affine(series, series)
+    # df[col+"_crop"], _ = crop(series, series)
+    # df[col+"_cross_sum"], _ = cross_sum(series, series)
+    # df[col+"_resample"], _ = resample(series, series)
+    # df[col+"_trend"], _ = trend(series, series)
+#
+    # df[col+"_random_affine"], _ = random_time_warp(series, series)
+    # df[col+"_random_crop"], _ = random_crop(series, series)
+    # df[col+"_random_cross_sum"], _ = random_cross_sum(series, series)
+    # df[col+"_random_sidetrack"], _ = random_sidetrack(series, series)
+    # df[col+"_random_time_warp"], _ = random_time_warp(series, series)
+    # df[col+"_random_magnify"], _ = random_magnify(series, series)
+    # df[col+"_random_jitter"], _ = random_jitter(series, series)
+    # df[col+"_random_trend"], _ = random_trend(series, series)
+  # return df
+#
 # df_out = modify(df.copy(),["Close"]); df_out.head()
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -380,25 +386,25 @@ def multiple_lags(df, start=1, end=3,columns=None):
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-def prophet_feat(df, cols,date, freq,train_size=150):
-  def prophet_dataframe(df): 
-    df.columns = ['ds','y']
-    return df
-
-  def original_dataframe(df, freq, name):
-    prophet_pred = pd.DataFrame({"Date" : df['ds'], name : df["yhat"]})
-    prophet_pred = prophet_pred.set_index("Date")
-    #prophet_pred.index.freq = pd.tseries.frequencies.to_offset(freq)
-    return prophet_pred[name].values
-
-  for col in cols:
-    model = Prophet(daily_seasonality=True)
-    fb = model.fit(prophet_dataframe(df[[date, col]].head(train_size)))
-    forecast_len = len(df) - train_size
-    future = model.make_future_dataframe(periods=forecast_len,freq=freq)
-    future_pred = model.predict(future)
-    df[col+"_PROPHET"] = list(original_dataframe(future_pred,freq,col))
-  return df
-
+# def prophet_feat(df, cols,date, freq,train_size=150):
+  # def prophet_dataframe(df):
+    # df.columns = ['ds','y']
+    # return df
+#
+  # def original_dataframe(df, freq, name):
+    # prophet_pred = pd.DataFrame({"Date" : df['ds'], name : df["yhat"]})
+    # prophet_pred = prophet_pred.set_index("Date")
+    # #prophet_pred.index.freq = pd.tseries.frequencies.to_offset(freq)
+    # return prophet_pred[name].values
+#
+  # for col in cols:
+    # model = Prophet(daily_seasonality=True)
+    # fb = model.fit(prophet_dataframe(df[[date, col]].head(train_size)))
+    # forecast_len = len(df) - train_size
+    # future = model.make_future_dataframe(periods=forecast_len,freq=freq)
+    # future_pred = model.predict(future)
+    # df[col+"_PROPHET"] = list(original_dataframe(future_pred,freq,col))
+  # return df
+#
 # df_out  = prophet_feat(df.copy().reset_index(),["Close","Open"],"Date", "D"); df_out.head()
 

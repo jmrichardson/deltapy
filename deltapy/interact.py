@@ -1,15 +1,11 @@
 import numpy as np
 import pandas as pd
-from statsmodels.tsa.ar_model import AR
 from timeit import default_timer as timer
-from sklearn.tree import DecisionTreeRegressor
 from math import sin, cos, sqrt, atan2, radians,ceil
-import ta
-from gplearn.genetic import SymbolicTransformer
-from scipy import linalg
 import math
 
 def lowess(df, cols, y, f=2. / 3., iter=3):
+    from scipy import linalg
     for col in cols:
       n = len(df[col])
       r = int(ceil(f * n))
@@ -49,6 +45,7 @@ def autoregression(df, drop=None, settings={"autoreg_lag":4}):
     :return: the "final_value" is a matrix (number of channels, autoreg_lag) indicating the parameters of
       autoregression for each channel.
     """
+    from statsmodels.tsa.ar_model import AR
     autoreg_lag = settings["autoreg_lag"]
     if drop:
       keep = df[drop]
@@ -93,6 +90,8 @@ def muldiv(df, feature_list):
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 def decision_tree_disc(df, cols, depth=4 ):
+  from sklearn.tree import DecisionTreeRegressor
+
   for col in cols:
     df[col +"_m1"] = df[col].shift(1)
     df = df.iloc[1:,:]
@@ -150,7 +149,8 @@ def haversine_distance(row, lon="Open", lat="Close"):
 
 
 def tech(df):
-      return ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume")
+  import ta
+  return ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume")
   
 # df = tech(df)
 
@@ -159,6 +159,8 @@ def tech(df):
 
 
 def genetic_feat(df, num_gen=20, num_comp=10):
+  from gplearn.genetic import SymbolicTransformer
+
   function_set = ['add', 'sub', 'mul', 'div',
                   'sqrt', 'log', 'abs', 'neg', 'inv','tan']
 

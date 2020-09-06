@@ -1,17 +1,10 @@
-from sklearn.decomposition import PCA, IncrementalPCA, KernelPCA
-from sklearn.kernel_approximation import AdditiveChi2Sampler
-from sklearn.cross_decomposition import CCA
-from sklearn.manifold import LocallyLinearEmbedding
-from sklearn.preprocessing import minmax_scale
-from sklearn import datasets, cluster
-from sklearn.neighbors import NearestNeighbors
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 
 
 def pca_feature(df, memory_issues=False,mem_iss_component=False,variance_or_components=0.80,n_components=5 ,drop_cols=None, non_linear=True):
-    
+  from sklearn.decomposition import PCA, IncrementalPCA, KernelPCA
+
   if non_linear:
     pca = KernelPCA(n_components = n_components, kernel='rbf', fit_inverse_transform=True, random_state = 33, remove_zero_eig= True)
   else:
@@ -41,6 +34,7 @@ def pca_feature(df, memory_issues=False,mem_iss_component=False,variance_or_comp
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 def cross_lag(df, drop=None, lags=1, components=4 ):
+  from sklearn.cross_decomposition import CCA
 
   if drop:
     keep = df[drop]
@@ -69,6 +63,7 @@ def cross_lag(df, drop=None, lags=1, components=4 ):
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 def a_chi(df, drop=None, lags=1, sample_steps=2 ):
+  from sklearn.kernel_approximation import AdditiveChi2Sampler
 
   if drop:
     keep = df[drop]
@@ -97,6 +92,8 @@ def a_chi(df, drop=None, lags=1, sample_steps=2 ):
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 def encoder_dataset(df, drop=None, dimesions=20):
+  import tensorflow as tf
+  from sklearn.preprocessing import minmax_scale
 
   if drop:
     train_scaled = minmax_scale(df.drop(drop,axis=1).values, axis = 0)
@@ -134,6 +131,7 @@ def encoder_dataset(df, drop=None, dimesions=20):
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 def lle_feat(df, drop=None, components=4):
+  from sklearn.manifold import LocallyLinearEmbedding
 
   if drop:
     keep = df[drop]
@@ -152,7 +150,7 @@ def lle_feat(df, drop=None, components=4):
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 def feature_agg(df, drop=None, components=4):
-
+  from sklearn import datasets, cluster
   if drop:
     keep = df[drop]
     df = df.drop(drop, axis=1)
@@ -175,7 +173,8 @@ def feature_agg(df, drop=None, components=4):
 
 
 def neigh_feat(df, drop, neighbors=6):
-  
+  from sklearn.neighbors import NearestNeighbors
+
   if drop:
     keep = df[drop]
     df = df.drop(drop, axis=1)

@@ -1,19 +1,7 @@
 import pandas as pd
 import numpy as np
-from statsmodels.tsa.stattools import acf, adfuller, pacf
 import itertools
-from statsmodels.tsa.ar_model import AR
-from scipy.signal import cwt, find_peaks_cwt, ricker, welch
-from scipy.stats import linregress
-import scipy.stats as stats
-from scipy.stats import kurtosis as _kurt
-from scipy.stats import skew as _skew
-import numpy as np
-from scipy import signal, integrate
-from scipy.interpolate import interp1d
 import math
-from statsmodels.tools.sm_exceptions import MissingDataError
-from numpy.linalg import LinAlgError
 
 
 def set_property(key, value):
@@ -164,6 +152,7 @@ def has_duplicate_max(x):
 #-> In Package
 
 def partial_autocorrelation(x, param=[{"lag": 1}]):
+    from statsmodels.tsa.stattools import acf, adfuller, pacf
 
     # Check the difference between demanded lags by param and possible lags to calculate (depends on len(x))
     max_demanded_lag = max([lag["lag"] for lag in param])
@@ -188,6 +177,9 @@ def partial_autocorrelation(x, param=[{"lag": 1}]):
 
 #-> In Package
 def augmented_dickey_fuller(x, param=[{"attr": "teststat"}]):
+    from numpy.linalg import LinAlgError
+    from statsmodels.tsa.stattools import acf, adfuller, pacf
+    from statsmodels.tools.sm_exceptions import MissingDataError
 
     res = None
     try:
@@ -375,6 +367,8 @@ def fft_coefficient(x, param = [{"coeff": 10, "attr": "real"}]):
 
 
 def ar_coefficient(x, param=[{"coeff": 5, "k": 5}]):
+    from statsmodels.tsa.ar_model import AR
+    from numpy.linalg import LinAlgError
 
     calculated_ar_params = {}
 
@@ -439,6 +433,8 @@ cwt_param = [ka for ka in [2,6,9]]
 @set_property("fctype", "combiner")
 @set_property("custom", True)
 def number_cwt_peaks(x, param=cwt_param):
+    from scipy.signal import find_peaks_cwt
+    from scipy.signal import cwt, ricker
 
     return [("CWTPeak_{}".format(n), len(find_peaks_cwt(vector=x, widths=np.array(list(range(1, n + 1))), wavelet=ricker))) for n in param]
 
@@ -449,6 +445,7 @@ def number_cwt_peaks(x, param=cwt_param):
 
 #-> In Package
 def spkt_welch_density(x, param=[{"coeff": 5}]):
+    from scipy.signal import welch
     freq, pxx = welch(x, nperseg=min(len(x), 256))
     coeff = [config["coeff"] for config in param]
     indices = ["coeff_{}".format(i) for i in coeff]
@@ -473,6 +470,7 @@ def spkt_welch_density(x, param=[{"coeff": 5}]):
 
 #-> In Package
 def linear_trend_timewise(x, param= [{"attr": "pvalue"}]):
+    from scipy.stats import linregress
 
     ix = x.index
 
@@ -663,6 +661,7 @@ cad_param = [0.1,1000, -234]
 @set_property("fctype", "combiner")
 @set_property("custom", True)
 def cad_prob(cads, param=cad_param):
+    import scipy.stats as stats
     return [("time_{}".format(time), stats.percentileofscore(cads, float(time) / (24.0 * 60.0)) / 100.0) for time in param]
     
 # cad_prob(df["Close"])
@@ -924,6 +923,8 @@ whelch_param = [100,200]
 @set_property("fctype", "combiner")
 @set_property("custom", True)
 def whelch_method(data, param=whelch_param):
+  from scipy import signal
+
 
   final = []
   for Fs in param:
@@ -1005,6 +1006,7 @@ struct_param = {"Volume":None, "Open": None}
 @set_property("fctype", "combiner")
 @set_property("custom", True)
 def structure_func(time, param=struct_param):
+      from scipy.interpolate import interp1d
 
       dict_final = {}
       for key, magnitude in param.items():
