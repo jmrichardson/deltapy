@@ -184,6 +184,7 @@ def triple_exponential_smoothing(df,cols, slen, alpha, beta, gamma, n_preds):
               seasonals[i%slen] = gamma*(val-smooth) + (1-gamma)*seasonals[i%slen]
               result.append(smooth+trend+seasonals[i%slen])
       df[col+"_TES"] = result
+      return df
 
 
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
